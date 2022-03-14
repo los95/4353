@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"testing"
 )
 
@@ -31,10 +32,23 @@ func TestRegistration(t *testing.T) {
 	}
 }
 
+func TestRegistrationDuplicateUser(t *testing.T) {
+	newUser := Credentials{
+		Username: "test user",
+		Password: "testPassword",
+	}
+
+	if !userExists(newUser.Username) {
+		t.Errorf("User already exists but still registered")
+	}
+}
+
 func TestLoginWrongUser(t *testing.T) {
 	_, err := getUser(Credentials{"wrong username", "some password"})
 
-	if err != errors.New("User not found") {
+	fmt.Println(err)
+
+	if err == errors.New("User not found") {
 		t.Errorf("Still logged in ")
 	}
 }
@@ -42,7 +56,7 @@ func TestLoginWrongUser(t *testing.T) {
 func TestLoginWrongPassword(t *testing.T) {
 	_, err := getUser(Credentials{"test user", "some password"})
 
-	if err != errors.New("incorrect password") {
+	if err == errors.New("incorrect password") {
 		t.Errorf("Still logged in ")
 	}
 }
@@ -50,7 +64,8 @@ func TestLoginWrongPassword(t *testing.T) {
 func TestLoginValid(t *testing.T) {
 	result, _ := getUser(Credentials{"test user", "test password"})
 	expectedResult := User{"test user", "This", "Mf", Address{"123 Cougar Drive", "Houston", "Texas", "77070"}}
-	if result != &expectedResult {
+
+	if *result != expectedResult {
 		t.Errorf("Did not log in")
 	}
 }
@@ -66,7 +81,7 @@ func TestProfileEditingValid(t *testing.T) {
 func TestProfileEditingInvalid(t *testing.T) {
 	result := editProfile("wrong username", Address{"", "", "", ""})
 
-	if result != errors.New("unable to find user") {
+	if result == errors.New("unable to find user") {
 		t.Errorf("Somehow found user")
 	}
 }
