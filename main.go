@@ -1,87 +1,18 @@
 package main
 
 import (
-	"errors"
-	"fmt"
-	"testing"
+	"github.com/gin-gonic/gin"
 )
 
-func TestGetUsers(t *testing.T) {
-	actualResult := getUsers()
-	expectedResult := []User{
-		{Username: "test user", FirstName: "This", LastName: "Mf", Residence: Address{"123 Cougar Drive", "Houston", "Texas", "77070"}},
-	}
-
-	for i, user := range actualResult {
-		if expectedResult[i] != user {
-			t.Errorf("Arrays do not match")
-		}
-	}
+func getUsers() []User {
+	return users
 }
 
-func TestRegistration(t *testing.T) {
-	newUser := Credentials{
-		Username: "testUserName",
-		Password: "testPassword",
-	}
-
-	registerNewUser(newUser)
-
-	if len(users) != 2 && len(userCredentials) != 2 {
-		t.Errorf("User Length and/or Credential Lengths do not match")
-	}
-}
-
-func TestRegistrationDuplicateUser(t *testing.T) {
-	newUser := Credentials{
-		Username: "test user",
-		Password: "testPassword",
-	}
-
-	if !userExists(newUser.Username) {
-		t.Errorf("User already exists but still registered")
-	}
-}
-
-func TestLoginWrongUser(t *testing.T) {
-	_, err := getUser(Credentials{"wrong username", "some password"})
-
-	fmt.Println(err)
-
-	if err == errors.New("User not found") {
-		t.Errorf("Still logged in ")
-	}
-}
-
-func TestLoginWrongPassword(t *testing.T) {
-	_, err := getUser(Credentials{"test user", "some password"})
-
-	if err == errors.New("incorrect password") {
-		t.Errorf("Still logged in ")
-	}
-}
-
-func TestLoginValid(t *testing.T) {
-	result, _ := getUser(Credentials{"test user", "test password"})
-	expectedResult := User{"test user", "This", "Mf", Address{"123 Cougar Drive", "Houston", "Texas", "77070"}}
-
-	if *result != expectedResult {
-		t.Errorf("Did not log in")
-	}
-}
-
-func TestProfileEditingValid(t *testing.T) {
-	result := editProfile("test user", Address{"", "", "", ""})
-
-	if result != nil {
-		t.Errorf("Did not edit profile")
-	}
-}
-
-func TestProfileEditingInvalid(t *testing.T) {
-	result := editProfile("wrong username", Address{"", "", "", ""})
-
-	if result == errors.New("unable to find user") {
-		t.Errorf("Somehow found user")
-	}
+func main() {
+	router := gin.Default()
+	router.POST("/register", register)
+	router.POST("/login", login)
+	router.POST("/profile", profile)
+	router.GET("/getHistory", history)
+	router.Run("localhost:8080")
 }
